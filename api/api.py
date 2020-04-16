@@ -12,7 +12,7 @@ def home():
 names = [
     {
     "team_name": "Team Flatten the Curve",
-    "team_member_sids": ["10985181, x"]
+    "team_member_sids": ["10985181, 12182573"]
     }
 ]
 
@@ -20,5 +20,8 @@ names = [
 def returnNames():
     return jsonify(names)
 
+# command to run remotely 
+app.run('0.0.0.0')
 
-app.run()
+# command to run locally
+# app.run()
