@@ -1,14 +1,27 @@
 #!/usr/bin/env python
 import pika
 import sys
+import json
+from DBTools import addNode
+from DBTools import addEdge
+from DBTools import resetDB
+
+
+#Make sure orientDB version 2.2 is running, version 3.x does not work with these drivers
+
+#-d run in background login:root password:rootpwd
+#docker run -d --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
+
+#-it run in foreground login:root password:rootpwd
+#docker run -it --name orientdb -p 2424:2424 -p 2480:2480 -e ORIENTDB_ROOT_PASSWORD=rootpwd orientdb:2.2
+
+resetDB()
+
 
 # Set the connection parameters to connect to rabbit-server1 on port 5672
 # on the / virtual host using the username "guest" and password "guest"
 
-username = ''
-password = ''
-hostname = ''
-virtualhost = ''
+
 
 credentials = pika.PlainCredentials(username, password)
 parameters = pika.ConnectionParameters(hostname,
@@ -38,9 +51,24 @@ for binding_key in binding_keys:
 
 print(' [*] Waiting for logs. To exit press CTRL+C')
 
+lastNodeFrom = -1
 
 def callback(ch, method, properties, body):
     print(" [x] %r:%r" % (method.routing_key, body))
+    bodystr = body.decode('utf-8')
+    data = json.loads(bodystr)
+    global lastNodeFrom
+    lastNode = -2
+    count = 0
+    for payload in data:
+        mrn = payload['mrn']
+        print(mrn)
+        addNode(mrn)
+        if(lastNodeFrom == -1):
+            lastNodeFrom = mrn
+        else:
+            addEdge(lastNodeFrom,mrn)
+            lastNodeFrom = mrn
 
 
 channel.basic_consume(
