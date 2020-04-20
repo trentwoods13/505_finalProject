@@ -63,7 +63,7 @@ def loadDB():
     password = "rootpwd"
 
     #create client to connect to local orientdb docker container
-    client = pyorient.OrientDB("172.31.144.183", 2424)
+    client = pyorient.OrientDB("172.31.147.250", 2424)
     try:
         session_id = client.connect(login, password)
     except:

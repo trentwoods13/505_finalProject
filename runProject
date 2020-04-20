@@ -1,0 +1,12 @@
+#!/bin/bash
+
+intexit() {
+	kill -HUP -$$
+}
+
+trap intexit SIGINT
+
+python Subscriber.py &
+python ~/505_finalProject/api/api.py &
+
+wait

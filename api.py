@@ -11,7 +11,7 @@ def home():
 
 names = [
     {
-    "team_name": "Team Flatten the Curve",
+    "team_names": "Team Flatten the Curve",
     "team_member_sids": ["10985181, 12182573"]
     }
 ]
