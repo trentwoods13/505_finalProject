@@ -9,18 +9,15 @@ import csv
 # Set the connection parameters to connect to rabbit-server1 on port 5672
 # on the / virtual host using the username "guest" and password "guest"
 
-
-def main():
+status = -1
+def init():
     #attempts to create database
     #if succeeds: starts listening to message broker
     #if failes: catches exeption and does not start listening
     loadCheck = loadDB()
 
-    # define status var to use in api
-    status = -1
-
     if loadCheck == True:
-
+        global status
         status = 1
         #database name
         dbname = "covid_reporting_project"
@@ -90,7 +87,6 @@ def main():
             rowCount += 1
 
         print('[*] Waiting for logs. To exit press CTRL+C')
-
 
         def callback(ch, method, properties, body):
             data = json.loads(body)
@@ -188,8 +184,7 @@ def main():
     else:
         print("Error connecting to database")
 
+init()
+
 def returnStatus():
     return status
-
-
-main()

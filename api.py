@@ -1,12 +1,12 @@
 import flask
 from flask import jsonify
-import Subscriber
+# import Subscriber
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 
-status = Subscriber.returnStatus()
+status = 1
 names = [
     {
     "team_names": "Team Flatten the Curve",
@@ -26,18 +26,24 @@ def home():
 def returnNames():
     return jsonify(names)
 
-@app.route('api/reset', methods=['GET'])
-def api_reset():
-    Subscriber.main()
-    reset_status_code = status
-    return jsonify(reset_status_code)
+@app.route('/api/testcount', methods=['GET'])
+def getTestCount():
+
+
+
+
+#@app.route('api/reset', methods=['GET'])
+#def api_reset():
+#    Subscriber.main()
+#    reset_status_code = status
+#    return jsonify(reset_status_code)
 
 
 
 # ---------------------- end of APIs ----------------------
 
 # command to run remotely
-#app.run('0.0.0.0')
+app.run('0.0.0.0')
 
 # command to run locally
-app.run()
+# app.run()

@@ -7,6 +7,6 @@ intexit() {
 trap intexit SIGINT
 
 python Subscriber.py &
-python ~/505_finalProject/api/api.py &
+python api.py &
 
 wait
