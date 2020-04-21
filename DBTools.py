@@ -43,7 +43,7 @@ def importHospitals(client):
             #insert hospital into database
             client.command(query)
         rowCount += 1
-    
+
 #NEED TO FINISH---------
 #need to make it so that whenever a patient is inserted, we check if they need to be routed to a hospital
 #if so, connect them to that hospital in the database and reduce the bed count by 1
@@ -51,7 +51,15 @@ def insertPatient(first_name, last_name, mrn, zip_code, patient_status_code, cli
     query = "CREATE VERTEX Patient SET first_name = '" + first_name + "', last_name = '" + last_name + "', mrn = '" + mrn + "', zip_code = '" + zip_code + "', patient_status_code = '" + patient_status_code + "'"
     client.command(query)
     #client.close()
-    
+
+def increaseCount(client):
+    query = "UPDATE Count INCREMENT Positive = 1"
+    client.command(query)
+
+def decreaseCount(client):
+    query = "UPDATE Count INCREMENT Negative = 1"
+    client.command(query)
+
 
 def loadDB():
     print("Starting database...")
@@ -81,7 +89,7 @@ def loadDB():
     client.command("CREATE PROPERTY Patient.mrn String")
     client.command("CREATE PROPERTY Patient.zip_code Integer")
     client.command("CREATE PROPERTY Patient.patient_status_code Integer")
-    
+
     client.command("CREATE CLASS Hospital EXTENDS V")
     client.command("CREATE PROPERTY Hospital.ID Integer")
     client.command("CREATE PROPERTY Hospital.Name String")
@@ -101,8 +109,14 @@ def loadDB():
     client.command("CREATE PROPERTY Hospital.Owner String")
     client.command("CREATE PROPERTY Hospital.Trauma String")
     client.command("CREATE PROPERTY Hospital.Helipad String")
-    
+
+    client.command("CREATE CLASS Count EXTENDS V")
+    client.command("CREATE PROPERTY Count.Positive Integer")
+    client.command("CREATE PROPERTY Count.Negative Integer")
+    client.command("CREATE VERTEX Count")
+
+
     importHospitals(client)
-    
+
     client.close()
     return True

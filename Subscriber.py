@@ -2,14 +2,13 @@
 import pika
 import sys
 import json
-from DBTools import loadDB, insertPatient
+from DBTools import loadDB, insertPatient, increaseCount, decreaseCount
 import pyorient
 import csv
-
 # Set the connection parameters to connect to rabbit-server1 on port 5672
 # on the / virtual host using the username "guest" and password "guest"
 
-status = -1
+
 def init():
     #attempts to create database
     #if succeeds: starts listening to message broker
@@ -106,6 +105,12 @@ def init():
 
                         #insert patient into database
                         insertPatient(first_name, last_name, mrn, zip_code, patient_status_code, client)
+
+                        # for positive and negative testing counts
+                        if(patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6'):
+                            increaseCount(client)
+                        else:
+                            decreaseCount(client)
 
                         #if the patient needs any level of hospital care route to nearest hospital of any level
                         if(patient_status_code == '3' or patient_status_code == '5'):
