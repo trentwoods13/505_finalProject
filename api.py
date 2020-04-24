@@ -91,6 +91,9 @@ def api_reset():
     query3 = "UPDATE Alert_list SET Zip = [] WHERE Zip != []"
     client.command(query3)
 
+    query4 = "UPDATE Hospital SET Available_beds = Beds WHERE Available_beds != Beds"
+    client.command(query4)
+
     if response_V[0] != 0:
         reset_status = 1
     else:
