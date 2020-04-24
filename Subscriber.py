@@ -5,9 +5,13 @@ import json
 from DBTools import loadDB, insertPatient, increaseCount, decreaseCount
 import pyorient
 import csv
+import time
 # Set the connection parameters to connect to rabbit-server1 on port 5672
 # on the / virtual host using the username "guest" and password "guest"
 
+start = time.time()
+multiplier = 1
+zip_Positive_copy = {}
 
 def init():
     #attempts to create database
@@ -80,14 +84,28 @@ def init():
         headerInfo = next(readFile)
         rowCount = 0
         zipDict = {}
+        # create additional zip dictionary with # of positive cases
+        zip_Positive = {}
+
         for row in readFile:
+            # all initally have 0 positive cases
+            zip_Positive[row[0]] = 0
+
             key = (row[0], row[1])
             zipDict[key] = row[2]
             rowCount += 1
 
+        #for key,value in zip_Positive.items():
+            #client.command("CREATE VERTEX Zip SET Code = " + key + ", Positive = 0")
+
         print('[*] Waiting for logs. To exit press CTRL+C')
 
+
         def callback(ch, method, properties, body):
+            global start
+            global multiplier
+            global zip_Positive_copy
+
             data = json.loads(body)
             for patient in data:
                 #print(patient)
@@ -101,16 +119,77 @@ def init():
                     #ensure that only unique patients are inserted
                     query = "SELECT COUNT(*) FROM Patient WHERE mrn = '" + mrn + "'"
                     response = client.command(query)
+
+
+                    alert_list = []
+
                     if response[0].COUNT == 0:
 
                         #insert patient into database
                         insertPatient(first_name, last_name, mrn, zip_code, patient_status_code, client)
 
+                        # if for some reason zip code wasn't added beforehand, initialize it
+                        if zip_code not in zip_Positive.keys():
+                            zip_Positive[zip_code] = 0
+                            #client.command("CREATE VERTEX Zip SET Code = " + key + ", Positive = 0")
+
+
                         # for positive and negative testing counts
                         if(patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6'):
                             increaseCount(client)
+                            if time.time() > start + 15:
+
+                                # the following lines can be used to test the real-time alert
+                                #zip_code1 = '41139'
+                                #zip_code2 = '40504'
+                                #zip_code3 = '41101'
+                                #zip_code4 = '40508'
+                                #zip_code5 = '41102'
+                                #x = zip_Positive[zip_code1] + 5
+                                #zip_Positive[zip_code1] = x
+                                #x = zip_Positive[zip_code2] + 5
+                                #zip_Positive[zip_code2] = x
+                                #x = zip_Positive[zip_code3] + 5
+                                #zip_Positive[zip_code3] = x
+                                #x = zip_Positive[zip_code4] + 5
+                                #zip_Positive[zip_code4] = x
+                                #x = zip_Positive[zip_code5] + 5
+                                #zip_Positive[zip_code5] = x
+                            #else:
+                                x = zip_Positive[zip_code] + 1
+                                zip_Positive[zip_code] = x
                         else:
                             decreaseCount(client)
+
+                        # every 15 seconds create a copy of the dict to compare to previous 15 seconds
+                        if time.time() > start + multiplier * 15:
+                            if multiplier == 1:
+                                zip_Positive_copy = zip_Positive.copy()
+                                multiplier = multiplier + 1
+                            else:
+                                multiplier = multiplier + 1
+                                # loop through the common zip codes
+                                for key in zip_Positive.keys() & zip_Positive_copy.keys():
+                                    if zip_Positive_copy[key] == 0:
+                                        continue
+                                    else:
+                                        # compare value now to value 15 seconds ago
+                                        if zip_Positive[key] >= 2 * zip_Positive_copy[key]:
+                                            alert_list.append(key)
+
+                                # send list of zip codes to DB
+                                print(alert_list)
+                                #x = ''
+                                #if len(alert_list) == 0:
+                                #    x = 'none'
+                                #else:
+                                #    for zip in alert_list:
+                                #        x = x + zip + ' '
+
+                                client.command("UPDATE Alert_list SET Zip =" + str(alert_list))
+                                zip_Positive_copy = zip_Positive.copy()
+
+
 
                         #if the patient needs any level of hospital care route to nearest hospital of any level
                         if(patient_status_code == '3' or patient_status_code == '5'):
@@ -130,20 +209,24 @@ def init():
                                 if nodeIDHospital == -1:
                                     query = "SELECT FROM Hospital WHERE ID = '" + str(distances[i][0]) + "'"
                                     response = client.command(query)
-                                    bedCount = response[0].Beds
+                                    bedCount = response[0].Available_beds
                                     if bedCount > 0:
                                         nodeIDHospital = response[0]._rid
                             if nodeIDHospital != -1:
                                 #find database id of patient
                                 getPatientID = "SELECT FROM Patient WHERE mrn = '" + str(mrn) + "'"
                                 nodePatient = client.query(getPatientID)
-                                nodeIDPatient = str(nodePatient[0]._rid)
-                                #connect patient to hospital in database
-                                makeEdge = "CREATE EDGE FROM " + nodeIDPatient + " TO " + nodeIDHospital
-                                client.command(makeEdge)
-                                #remove a bed from the hospital
-                                updateBeds = "UPDATE " + nodeIDHospital + " INCREMENT Beds = -1"
-                                client.command(updateBeds)
+
+                                if str(nodePatient[0]._rid) == '':
+                                    break
+                                else:
+                                    nodeIDPatient = str(nodePatient[0]._rid)
+                                    #connect patient to hospital in database
+                                    makeEdge = "CREATE EDGE FROM " + nodeIDPatient + " TO " + nodeIDHospital
+                                    client.command(makeEdge)
+                                    #remove a bed from the hospital
+                                    updateBeds = "UPDATE " + nodeIDHospital + " INCREMENT Available_beds = -1"
+                                    client.command(updateBeds)
                             else:
                                 print("No hospitals with available beds for this patient")
 
@@ -165,20 +248,25 @@ def init():
                                 if nodeIDHospital == -1:
                                     query = "SELECT FROM Hospital WHERE ID = '" + str(distances[i][0]) + "'"
                                     response = client.command(query)
-                                    bedCount = response[0].Beds
+                                    bedCount = response[0].Available_beds
                                     if bedCount > 0:
                                         nodeIDHospital = response[0]._rid
                             if nodeIDHospital != -1:
                                 #find database id of patient
                                 getPatientID = "SELECT FROM Patient WHERE mrn = '" + str(mrn) + "'"
+
                                 nodePatient = client.query(getPatientID)
-                                nodeIDPatient = str(nodePatient[0]._rid)
-                                #connect patient to hospital in database
-                                makeEdge = "CREATE EDGE FROM " + nodeIDPatient + " TO " + nodeIDHospital
-                                client.command(makeEdge)
-                                #remove a bed from the hospital
-                                updateBeds = "UPDATE " + nodeIDHospital + " INCREMENT Beds = -1"
-                                client.command(updateBeds)
+
+                                if str(nodePatient[0]._rid) == '':
+                                    break
+                                else:
+                                    nodeIDPatient = str(nodePatient[0]._rid)
+                                    #connect patient to hospital in database
+                                    makeEdge = "CREATE EDGE FROM " + nodeIDPatient + " TO " + nodeIDHospital
+                                    client.command(makeEdge)
+                                    #remove a bed from the hospital
+                                    updateBeds = "UPDATE " + nodeIDHospital + " INCREMENT Available_beds = -1"
+                                    client.command(updateBeds)
                             else:
                                 print("No hospitals with available beds for this patient")
 
@@ -190,6 +278,3 @@ def init():
         print("Error connecting to database")
 
 init()
-
-def returnStatus():
-    return status

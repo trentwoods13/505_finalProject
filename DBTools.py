@@ -43,6 +43,8 @@ def importHospitals(client):
             #insert hospital into database
             client.command(query)
         rowCount += 1
+    x = "UPDATE HOSPITAL SET Available_beds = Beds"
+    client.command(x)
 
 #NEED TO FINISH---------
 #need to make it so that whenever a patient is inserted, we check if they need to be routed to a hospital
@@ -99,6 +101,7 @@ def loadDB():
     client.command("CREATE PROPERTY Hospital.Zip Integer")
     client.command("CREATE PROPERTY Hospital.Type String")
     client.command("CREATE PROPERTY Hospital.Beds Integer")
+    client.command("CREATE PROPERTY Hospital.Available_beds Integer")
     client.command("CREATE PROPERTY Hospital.County String")
     client.command("CREATE PROPERTY Hospital.Countyfips Integer")
     client.command("CREATE PROPERTY Hospital.Country String")
@@ -114,6 +117,12 @@ def loadDB():
     client.command("CREATE PROPERTY Count.Positive Integer")
     client.command("CREATE PROPERTY Count.Negative Integer")
     client.command("CREATE VERTEX Count")
+
+    client.command("CREATE CLASS Alert_list EXTENDS V")
+    client.command("CREATE PROPERTY Alert_list.Zip EMBEDDEDLIST String")
+    client.command("CREATE VERTEX Alert_list")
+    client.command("UPDATE Alert_list SET Zip = ''")
+
 
 
     importHospitals(client)
