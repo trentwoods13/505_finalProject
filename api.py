@@ -82,6 +82,18 @@ def api_reset():
     query = "DELETE VERTEX Patient"
     response_V = client.command(query)
 
+    query1 = "UPDATE Count SET Positive = 0 WHERE Positive != 0"
+    client.command(query1)
+
+    query2 = "UPDATE Count SET Negative = 0 WHERE Negative != 0"
+    client.command(query2)
+    
+    query3 = "UPDATE Alert_list SET Zip = [] WHERE Zip != []"
+    client.command(query3)
+
+    query4 = "UPDATE Hospital SET Available_beds = Beds WHERE Available_beds != Beds"
+    client.command(query4)
+
     if response_V[0] != 0:
         reset_status = 1
     else:
@@ -265,7 +277,7 @@ def getHospital(id):
 # ---------------------- end of APIs ----------------------
 
 # command to run remotely
-#app.run('0.0.0.0')
+app.run('0.0.0.0')
 
 # command to run locally
-app.run()
+#app.run()

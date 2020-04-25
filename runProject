@@ -6,7 +6,7 @@ intexit() {
 
 trap intexit SIGINT
 
-python Subscriber.py &
-python api.py &
+python3 Subscriber.py &
+python3 api.py &
 
 wait
