@@ -161,9 +161,9 @@ def alertList():
     return jsonify(state)
 
 
-@app.route('/api/getpatient/', methods=['GET'])
+@app.route('/api/getpatient/<id>', methods=['GET'])
 
-def getPatient():
+def getPatient(id):
     #database name
     dbname = "covid_reporting_project"
     #database login is root by default
@@ -175,8 +175,9 @@ def getPatient():
     session_id = client.connect(login, password)
     client.db_open(dbname, login, password)
 
-    mrn = request.args.get('mrn')
+    #mrn = request.args.get('mrn')
 
+    mrn = id
     query = "SELECT * FROM Patient WHERE mrn = '" + mrn + "'"
     nodePatient = client.query(query)
 
@@ -207,9 +208,9 @@ def getPatient():
     return jsonify(returnPatient)
 
 
-@app.route('/api/gethospital/', methods=['GET'])
+@app.route('/api/gethospital/<id>', methods=['GET'])
 
-def getHospital():
+def getHospital(id):
     #database name
     dbname = "covid_reporting_project"
     #database login is root by default
@@ -221,7 +222,8 @@ def getHospital():
     session_id = client.connect(login, password)
     client.db_open(dbname, login, password)
 
-    hospitalID = request.args.get('ID')
+    #hospitalID = request.args.get('ID')
+    hospitalID = id
 
     query = "SELECT * FROM Hospital WHERE ID = " + hospitalID
     nodeHospital = client.query(query)
