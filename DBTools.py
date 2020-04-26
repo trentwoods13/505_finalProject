@@ -46,9 +46,7 @@ def importHospitals(client):
     x = "UPDATE HOSPITAL SET Available_beds = Beds"
     client.command(x)
 
-#NEED TO FINISH---------
-#need to make it so that whenever a patient is inserted, we check if they need to be routed to a hospital
-#if so, connect them to that hospital in the database and reduce the bed count by 1
+
 def insertPatient(first_name, last_name, mrn, zip_code, patient_status_code, client):
     query = "CREATE VERTEX Patient SET first_name = '" + first_name + "', last_name = '" + last_name + "', mrn = '" + mrn + "', zip_code = '" + zip_code + "', patient_status_code = '" + patient_status_code + "'"
     client.command(query)
