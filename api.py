@@ -17,9 +17,9 @@ num_zips_alert = 0
 
 names = [
     {
-    "team_names": "Team Flatten the Curve",
-    "team_member_sids": ["10985181, 12182573"],
-    "status": status
+    "team_name": "Team Flatten the Curve",
+    "Team_members_sids": ["10985181, 12182573"],
+    "app_status_code": status
     }
 ]
 
@@ -87,7 +87,7 @@ def api_reset():
 
     query2 = "UPDATE Count SET Negative = 0 WHERE Negative != 0"
     client.command(query2)
-    
+
     query3 = "UPDATE Alert_list SET Zip = [] WHERE Zip != []"
     client.command(query3)
 
@@ -214,7 +214,7 @@ def getPatient(id):
     returnPatient = {
 
     "mrn": mrn,
-    "location code": hospital_code
+    "location_code": hospital_code
 
     }
     return jsonify(returnPatient)
