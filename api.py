@@ -15,13 +15,12 @@ app.config["DEBUG"] = True
 status = 1
 num_zips_alert = 0
 
-names = [
-    {
+names = {
     "team_name": "Team Flatten the Curve",
     "Team_members_sids": ["10985181, 12182573"],
     "app_status_code": status
     }
-]
+
 
 
 
