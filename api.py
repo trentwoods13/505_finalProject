@@ -204,7 +204,7 @@ def getPatient(id):
             query = "SELECT out().ID FROM PATIENT WHERE mrn = '" + mrn_code + "'"
             hospital = client.query(query)
 
-            hospital_code = hospital[0].out
+            hospital_code = str(hospital[0].out)
 
     else:
         mrn = "not found"
